@@ -101,6 +101,5 @@ for line in cmdlist: # f:
 
 print("; END of cutting")
 print("G1 Z25")
-print("G1 X0 Y0")
-print("M1")
- 
+print("G1 X0 Y0") # move to a safe place
+print("M84") # motors off
