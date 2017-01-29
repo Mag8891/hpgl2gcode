@@ -51,11 +51,11 @@ else:
 #SP1 select pen 1
 
 #constants
-zup=5 # 5mm should be safe enough
+zup=3 # 5mm should be safe enough
 zdn=0 # using 0, for engraving negative values to be used
 upm=40 # hpgl units per mm (in theory should be 40.2)
 epm=0 # extrude per mm - in case I'm trying to plot with PLA
-feed=500 #default feedrate
+feed=600 #default feedrate
 
 #init stuff - whatever g commands 
 print("; Standar Header")
@@ -71,32 +71,41 @@ ylast=0
 fcon = f.read()
 cmdlist = fcon.split(";")
 for line in cmdlist: # f:
- co=line[:2]
- pa=line[2:]
-# print("DEBUG1>",line," CO>",co," PA>",pa,"[EOF]")
- if pa.find(',')!=-1:
-   palist=pa.split(",")
-#   print("DEBUG2>",palist)
-   x=int(palist[0])/upm
-   y=int(palist[1])/upm
- else:
-   x=xlast
-   y=ylast
+ if line: 
+   if line[0]==' ':
+     line=line[1:]
+   if line[0]=='\n':
+     line=line[1:]
+   co=line[:2]
+   pa=line[2:]
+   print("DEBUG1>",line," CO>",co," PA>",pa,"[EOF]",file=sys.stderr)
+   if pa.find(',')!=-1:
+     palist=pa.split(",")
+     print("DEBUG2>",palist,file=sys.stderr)
+     x=int(palist[0])/upm
+     y=int(palist[1])/upm
+     seco=0
+   else:
+     x=xlast
+     y=ylast
+     seco=1
 
- for case in switch(co):
-    if case('PA'):
-        print("G1 X",x," Y",y," F",feed,sep="")
-        break
-    if case('PD'):
-        print("G1 Z",zdn," F",feed,sep="")
-        print("G1 X",x," Y",y," F",feed,sep="")
-        break
-    if case('PU'):
-        print("G1 Z",zup," F",feed,sep="")
-        print("G1 X",x," Y",y," F",feed,sep="")
-        break
-    xlast=x
-    ylast=y
+   for case in switch(co):
+      if case('PA'):
+          print("G1 X",x," Y",y," F",feed,sep="")
+          break
+      if case('PD'):
+          print("G1 Z",zdn," F",feed,sep="")
+          if seco==0:
+             print("G1 X",x," Y",y," F",feed,sep="")
+          break
+      if case('PU'):
+          print("G1 Z",zup," F",feed,sep="")
+          if seco==0:
+             print("G1 X",x," Y",y," F",feed,sep="")
+          break
+   xlast=x
+   ylast=y
 
 
 print("; END of cutting")
